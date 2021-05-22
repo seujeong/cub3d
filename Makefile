@@ -1,99 +1,58 @@
-NAME	= cub3d
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: hyeojang <hyeojang@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2021/03/15 22:38:16 by hyeojang          #+#    #+#              #
+#    Updated: 2021/05/19 23:53:17 by hyeojang         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-SRC_NAME = main.c \
-		   init.c \
-		   get_next_line.c \
-		   keys.c\
-		   pos.c \
-		   parse1.c\
-		   parse2.c \
-		   move.c \
-		   draw.c \
-		   texture.c \
-		   raycasting.c \
-		   sprite.c \
-		   mapcheck.c \
-		   render.c \
-		   utils.c \
-		   utils2.c \
-		   screenshot.c
-SRC_PATH = ./src
-SRC = $(addprefix $(SRC_PATH)/, $(SRC_NAME))
+NAME		= cub3D
 
-OBJ_NAME = $(SRC_NAME:.c=.o)
-OBJ_PATH = ./obj
-OBJ = $(addprefix $(OBJ_PATH)/, $(OBJ_NAME))
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c
-	@mkdir $(OBJ_PATH) 2> /dev/null || true
-	@gcc $(CFLAG) $(HEADER) -o $@ -c $<
+CC			= gcc
+CFLAGS		= -Wall -Wextra -Werror -o3
+# CFLAGS		= -g3 -fsanitize=address
 
-BSRC_NAME = main_bonus.c \
-		   init_bonus.c \
-		   get_next_line_bonus.c \
-		   keys_bonus.c\
-		   pos_bonus.c \
-		   parse1_bonus.c\
-		   parse2_bonus.c \
-		   move_bonus.c \
-		   draw_bonus.c \
-		   texture_bonus.c \
-		   raycasting_bonus.c \
-		   sprite_bonus.c \
-		   mapcheck_bonus.c \
-		   render_bonus.c \
-		   utils_bonus.c \
-		   utils2_bonus.c \
-		   utils3_bonus.c \
-		   screenshot_bonus.c
-BSRC_PATH = ./bonus
-BSRC = $(addprefix $(SRC_PATH)/, $(SRC_NAME))
+ifeq ($(DEBUG),true)
+	CFLAGS += -g
+endif
 
-BOBJ_NAME = $(BSRC_NAME:.c=.o)
-BOBJ_PATH = ./bobj
-BOBJ = $(addprefix $(BOBJ_PATH)/, $(BOBJ_NAME))
-$(BOBJ_PATH)/%.o: $(BSRC_PATH)/%.c
-	@mkdir $(BOBJ_PATH) 2> /dev/null || true
-	@gcc $(CFLAG) $(HEADER) -o $@ -c $<
+RM			= rm -rf
+INCLS		= ./includes/.
+LMLX		= libmlx.dylib
 
-SCREENSHOT = screenshot.bmp
+OBJS		= $(SRCS:.c=.o)
+SRCS		= $(addprefix $(SRCS_DIR), $(SRCS_LIST))
+SRCS_DIR	= ./srcs/
+SRCS_LIST	= main.c exit.c event.c save.c render.c move.c render_utils.c\
+				render_sprite.c \
+				utils/get_next_line_utils.c utils/get_next_line.c \
+				utils/ft_strcmp.c utils/ft_memset.c utils/ft_split.c \
+				utils/free_word.c utils/ft_memmove.c utils/ft_lstadd_back.c \
+				utils/ft_lstclear.c utils/ft_lstnew.c utils/ft_lstsize.c \
+				utils/ft_lstlast.c utils/put_xy.c \
+				inits/init_map.c inits/init.c inits/init_parse.c \
+				inits/init_texture.c inits/init_resolution.c \
+				inits/init_color.c
 
-HEADER	= -I./includes
+all: $(NAME)
 
-CFLAG	= -Wall -Wextra -Werror
+$(LMLX) :
+	@$(MAKE) -C mlx
+	@cp mlx/libmlx.dylib .
 
-LIBFT	= libft.a
+$(NAME) : $(LMLX) $(OBJS)
+	@$(CC) $(CFLAGS) -I $(INCLS) $(LMLX) $(OBJS) -o $(NAME)
 
-LIBMLX	= libmlx.a
+clean:
+	@$(MAKE) -C mlx clean
+	$(RM) $(OBJS)
+	$(RM) image.bmp
 
-MLX	= -framework OpenGL -framework Appkit
+fclean: clean
+	$(RM) $(NAME) $(LMLX)
 
-LIBS	= -L./lib/libft -lft -L./lib/mlx -lmlx
-
-RM	= rm -rf
-
-all	: $(NAME)
-
-$(NAME)	: $(OBJ) $(LIBFT) $(LIBMLX)
-	gcc -o $(NAME) $(OBJ) $(HEADER) $(CFLAG) $(LIBS) $(MLX)
-
-bonus	: $(BOBJ) $(LIBFT) $(LIBMLX)
-	gcc -o $(NAME) $(BOBJ) $(HEADER) $(CFLAG) $(LIBS) $(MLX)
-
-$(LIBFT):
-	$(MAKE) -C lib/libft
-
-$(LIBMLX):
-	$(MAKE) -C lib/mlx
-
-clean	:
-	$(MAKE) -C lib/libft clean
-	$(MAKE) -C lib/mlx clean
-	rm -rf $(OBJ_PATH) $(BOBJ_PATH) $(SCREENSHOT)
-
-fclean	: clean
-	$(MAKE) -C lib/libft fclean
-	rm -rf $(NAME)
-
-re		: fclean all
-
-.PHONY: all clean fclean re
+re: fclean all
